@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>给特别的你</title>
+    <style>
+        /* 全局重置 */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body, html { width: 100%; height: 100%; overflow: hidden; font-family: "PingFang SC", "Microsoft YaHei", sans-serif; }
+
+        /* --- 界面1：提示页 --- */
+        #page1 {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: #f4f4f5;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 10; transition: opacity 0.6s ease;
+        }
+        .hint-text { font-size: 16px; color: #666; margin-bottom: 40px; letter-spacing: 1px; }
+        
+        /* 按键图标样式 */
+        .enter-btn {
+            width: 70px; height: 70px; border-radius: 50%;
+            background: #ff9a9e; border: none; cursor: pointer;
+            display: flex; justify-content: center; align-items: center;
+            box-shadow: 0 4px 15px rgba(255, 154, 158, 0.4);
+            animation: pulse 2s infinite;
+            transition: transform 0.2s;
+        }
+        .enter-btn:active { transform: scale(0.9); }
+        .enter-btn svg { width: 30px; height: 30px; fill: white; margin-left: 4px; }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 154, 158, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(255, 154, 158, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 154, 158, 0); }
+        }
+
+        /* --- 界面2：信件页 --- */
+        #page2 {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #fff5e6 0%, #ffe0e6 50%, #e0f0ff 100%);
+            display: flex; justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.8s ease;
+            overflow-y: auto; /* 内容多时可滚动 */
+        }
+
+        .letter-container {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            width: 90%; max-width: 500px;
+            padding: 35px 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            margin: 40px 0; /* 上下留白方便滚动 */
+            position: relative; z-index: 2;
+        }
+
+        .letter-content {
+            font-size: 16px; line-height: 2; color: #4a4a4a;
+            text-align: justify; letter-spacing: 0.5px;
+        }
+
+        .signature {
+            margin-top: 30px; text-align: right;
+            font-weight: bold; color: #ff758c; font-size: 17px;
+            opacity: 0; transition: opacity 1s ease 0.5s;
+        }
+
+        /* 渐显动画类 */
+        .fade-in-up {
+            opacity: 0; transform: translateY(20px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+        .fade-in-up.visible { opacity: 1; transform: translateY(0); }
+
+        /* --- 装饰：彩带与烟花 (CSS实现，无需外部图片) --- */
+        .decoration { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden; z-index: 1; }
+        
+        .confetti {
+            position: absolute; width: 10px; height: 10px; opacity: 0.8;
+            animation: fall linear infinite;
+        }
+        @keyframes fall {
+            0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+        }
+
+        .firework {
+            position: absolute; width: 6px; height: 6px; border-radius: 50%;
+            background: #fff; opacity: 0;
+            animation: explode 2s ease-out infinite;
+        }
+        @keyframes explode {
+            0% { transform: scale(0); opacity: 1; box-shadow: 0 0 10px currentColor; }
+            50% { transform: scale(3); opacity: 0.8; box-shadow: 0 0 20px currentColor, 0 0 40px currentColor; }
+            100% { transform: scale(4); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 界面1：提示页 -->
+    <div id="page1">
+        <div class="hint-text">当前版本暂不支持查看</div>
+        <button class="enter-btn" onclick="enterLetter()">
+            <!-- 简单的箭头/播放图标 -->
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+    </div>
+
+    <!-- 界面2：信件页 -->
+    <div id="page2">
+        <!-- 装饰层 -->
+        <div class="decoration" id="decoLayer"></div>
+
+        <!-- 信件主体 -->
+        <div class="letter-container">
+            <div class="letter-content fade-in-up" id="mainText">
+                这个暑假没能和你一起出去玩，心里总觉得空落落的。以前这时候咱们肯定又凑在一起乱逛了。<br><br>
+                现在你去了深圳，我在这边，虽然隔着距离，但每次看到好玩的东西、吃到好吃的，还是会下意识想跟你分享。<br><br>
+                这几天河口这边闷热闷热的，希望你那边的天气别太热，你也别总闷在家里。好好放松一下，多出去走走看看，把高中攒下的疲惫都甩掉，玩得开心点！<br><br>
+                还有啊，别忘了要少吃点夜宵，多出门运动运动，等你回来我可得好好验收你掉秤的成果，看看会不会变得比我还帅。<br><br>
+                等九月到了大学，咱们可得约好经常见面。照顾好自己，等你回来！！
+            </div>
+            <div class="signature fade-in-up" id="signText">—— 王晨曦</div>
+        </div>
+    </div>
+
+    <script>
+        // 1. 切换界面逻辑
+        function enterLetter() {
+            const p1 = document.getElementById('page1');
+            const p2 = document.getElementById('page2');
+            
+            p1.style.opacity = '0';
+            setTimeout(() => {
+                p1.style.display = 'none';
+                p2.style.opacity = '1';
+                p2.style.pointerEvents = 'auto';
+                initAnimations();
+                initDecorations();
+            }, 600);
+        }
+
+        // 2. 文字渐显动画
+        function initAnimations() {
+            setTimeout(() => {
+                document.getElementById('mainText').classList.add('visible');
+            }, 300);
+            setTimeout(() => {
+                document.getElementById('signText').classList.add('visible');
+            }, 1200);
+        }
+
+        // 3. 生成彩带和烟花 (纯CSS/JS动态生成，无需外部资源)
+        function initDecorations() {
+            const layer = document.getElementById('decoLayer');
+            const colors = ['#ff9a9e', '#fecfef', '#a1c4fd', '#f6d365', '#84fab0'];
+            
+            // 生成彩带
+            for(let i=0; i<20; i++) {
+                const div = document.createElement('div');
+                div.className = 'confetti';
+                div.style.left = Math.random() * 100 + '%';
+                div.style.background = colors[Math.floor(Math.random() * colors.length)];
+                div.style.width = (Math.random() * 8 + 5) + 'px';
+                div.style.height = (Math.random() * 15 + 10) + 'px';
+                div.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+                div.style.animationDuration = (Math.random() * 5 + 5) + 's';
+                div.style.animationDelay = (Math.random() * 5) + 's';
+                layer.appendChild(div);
+            }
+
+            // 生成烟花光点
+            for(let i=0; i<8; i++) {
+                const div = document.createElement('div');
+                div.className = 'firework';
+                div.style.left = (Math.random() * 80 + 10) + '%';
+                div.style.top = (Math.random() * 60 + 10) + '%';
+                div.style.color = colors[Math.floor(Math.random() * colors.length)];
+                div.style.animationDelay = (Math.random() * 4) + 's';
+                div.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                layer.appendChild(div);
+            }
+        }
+    </script>
+</body>
+</html>
